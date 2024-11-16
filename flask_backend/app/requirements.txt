@@ -1,0 +1,5 @@
+uvicorn
+psycopg2
+bcrypt
+fastapi
+python-dotenv

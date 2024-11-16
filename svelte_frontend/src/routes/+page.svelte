@@ -8,17 +8,17 @@
     let lastName = '';
     let email = '';
     let password = '';
-    let registrationError = ''; // Error state for registration
+    let registrationError = ''; // Message for registration
 
     // Login fields
-    let loginUsername = '';
+    let loginIdentifier = '';
     let loginPassword = '';
     let loginError = ''; // Error state for login
 
     function toggleRegister() {
         showRegisterForm = !showRegisterForm;
         showLoginForm = false; // Hide login form when showing register
-        registrationError = ''; // Reset error message
+        registrationError = ''; // Reset message
     }
 
     function toggleLogin() {
@@ -42,17 +42,12 @@
             }),
         });
 
+        const responseJson = await response.json();
+        registrationError = responseJson.message;
+
         if (response.ok) {
-            console.log('Registration successful!');
-            username = '';
-            firstName = '';
-            lastName = '';
-            email = '';
-            password = '';
-            registrationError = ''; // Clear any previous errors
-        } else {
-            const errorData = await response.json();
-            registrationError = errorData.message || 'Registration failed!';
+            registrationError = '';
+            window.location.href = '/Student';
         }
     }
 
@@ -63,30 +58,25 @@
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            username: loginUsername,
+            login_identifier: loginIdentifier,
             password: loginPassword,
         }),
     });
 
     if (response.ok) {
-        const responseData = await response.json();  // Get the response data
-        console.log('Login successful!');
+        loginError = '';
+        const responseData = await response.json();
 
         if (responseData.role === 'teacher') {
             window.location.href = '/Teacher';
         } else if (responseData.role === 'student') {
             window.location.href = '/Student';
         } else {
-            console.error('User role is unknown.');
+            loginError = responseData.message;
         }
-
-        // Reset login fields after login
-        loginUsername = '';
-        loginPassword = '';
-        loginError = ''; // Clear previous errors
     } else {
         const errorData = await response.json();
-        loginError = errorData.message || 'Login failed!';
+        loginError = errorData.message || 'Neteisingas vartotojo vardas/el. paštas arba slaptažodis!';
     }
 }
 
@@ -223,7 +213,7 @@
     {#if showLoginForm}
         <div class="form">
             <h2>Prisijungimas</h2>
-            <input type="text" bind:value={loginUsername} placeholder="Vartotojo vardas" />
+            <input type="text" bind:value={loginIdentifier} placeholder="Vartotojo vardas" />
             <input type="password" bind:value={loginPassword} placeholder="Slaptažodis" />
             <button on:click={loginUser}>Prisijungti</button>
             {#if loginError}

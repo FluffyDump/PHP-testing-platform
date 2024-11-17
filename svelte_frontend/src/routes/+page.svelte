@@ -1,4 +1,14 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { goto } from '$app/navigation';
+    import { jwtDecode } from "jwt-decode";
+
+    interface CustomJwtPayload {
+        sub: string;
+        role: string;
+        exp: number;
+    }
+
     let showRegisterForm = false;
     let showLoginForm = false;
 
@@ -15,20 +25,49 @@
     let loginPassword = '';
     let loginError = ''; // Error state for login
 
+    let isLoading = true; // Track loading state for the blur effect
+
+    // Function to get role from the JWT token
+    function getRoleFromToken() {
+        const token = localStorage.getItem("access_token");
+
+        if (token) {
+            try {
+                const decoded = jwtDecode<CustomJwtPayload>(token);
+                return decoded.role;
+            } catch (error) {
+                console.error("Invalid token:", error);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    // On component mount, check for the JWT token and role
+    onMount(() => {
+        const role = getRoleFromToken();
+        isLoading = false; // Stop loading once the token check is done
+
+        if (role) {
+            goto(`/secured/${role}`);
+        }
+    });
+
     function toggleRegister() {
         showRegisterForm = !showRegisterForm;
-        showLoginForm = false; // Hide login form when showing register
-        registrationError = ''; // Reset message
+        showLoginForm = false;
+        registrationError = '';
     }
 
     function toggleLogin() {
         showLoginForm = !showLoginForm;
-        showRegisterForm = false; // Hide register form when showing login
-        loginError = ''; // Reset error message
+        showRegisterForm = false;
+        loginError = '';
     }
 
+    // Handle user registration
     async function registerUser() {
-        const response = await fetch('http://localhost:5000/register', { 
+        const response = await fetch('http://localhost:8000/register', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -47,66 +86,44 @@
 
         if (response.ok) {
             registrationError = '';
-            window.location.href = '/Student';
+            goto('/secured/Student');
         }
     }
 
+    // Handle user login
     async function loginUser() {
-    const response = await fetch('http://localhost:5000/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            login_identifier: loginIdentifier,
-            password: loginPassword,
-        }),
-    });
+        const response = await fetch('http://localhost:8000/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: "include",
+            body: JSON.stringify({
+                login_identifier: loginIdentifier,
+                password: loginPassword,
+            }),
+        });
 
-    if (response.ok) {
-        loginError = '';
-        const responseData = await response.json();
+        if (response.ok) {
+            loginError = '';
+            const responseData = await response.json();
 
-        if (responseData.role === 'teacher') {
-            window.location.href = '/Teacher';
-        } else if (responseData.role === 'student') {
-            window.location.href = '/Student';
+            if (responseData.role) {
+                localStorage.setItem("access_token", responseData.access_token);
+                goto(`/secured/${responseData.role}`);
+            } else {
+                loginError = responseData.message;
+            }
         } else {
-            loginError = responseData.message;
+            const errorData = await response.json();
+            loginError = errorData.message || 'Invalid username/email or password!';
         }
-    } else {
-        const errorData = await response.json();
-        loginError = errorData.message || 'Neteisingas vartotojo vardas/el. paštas arba slaptažodis!';
     }
-}
 
 </script>
 
 <style>
-    :global(html, body) {
-        margin: 0;
-        height: 100vh;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        overflow: hidden; /* Prevent scrolling */
-        background: linear-gradient(270deg, #f0f4f8, #4A90E2, #f0f4f8);
-        background-size: 400% 400%; /* Make the gradient larger for smooth movement */
-        animation: gradientFlow 15s ease infinite; /* Animation for flowing effect */
-    }
-
-    @keyframes gradientFlow {
-        0% {
-            background-position: 0% 50%; /* Start position */
-        }
-        50% {
-            background-position: 100% 50%; /* Middle position */
-        }
-        100% {
-            background-position: 0% 50%; /* End position */
-        }
-    }
-
-    /* Use flexbox to center items */
+    /* Add basic styling for the main container */
     .main {
         display: flex;
         flex-direction: column;
@@ -114,6 +131,7 @@
         justify-content: center; /* Center vertically */
         height: 100vh; /* Full height */
         text-align: center; /* Center text */
+        transition: filter 0.3s ease; /* Smooth transition for blur effect */
     }
 
     h1 {
@@ -142,7 +160,6 @@
 
     .button:hover {
         background-color: #357ABD;
-        transform: scale(1.05);
     }
 
     .form {
@@ -186,7 +203,7 @@
     }
 </style>
 
-<div class="main">
+<div class="main" style="filter: blur({isLoading ? '10px' : '0px'})">
     <h1>PHP testavimo platforma</h1>
     <p>Autorius: Tomas Petrauskas</p>
 

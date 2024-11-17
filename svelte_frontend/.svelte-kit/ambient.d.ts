@@ -38,7 +38,6 @@ declare module '$env/static/private' {
 	export const npm_config_noproxy: string;
 	export const HOME: string;
 	export const CHROME_DESKTOP: string;
-	export const OLDPWD: string;
 	export const TERM_PROGRAM_VERSION: string;
 	export const DESKTOP_SESSION: string;
 	export const NVM_BIN: string;
@@ -56,6 +55,7 @@ declare module '$env/static/private' {
 	export const SYSTEMD_EXEC_PID: string;
 	export const IM_CONFIG_CHECK_ENV: string;
 	export const DBUS_SESSION_BUS_ADDRESS: string;
+	export const npm_config_engine_strict: string;
 	export const COLORTERM: string;
 	export const GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 	export const COLOR: string;
@@ -168,7 +168,6 @@ declare module '$env/dynamic/private' {
 		npm_config_noproxy: string;
 		HOME: string;
 		CHROME_DESKTOP: string;
-		OLDPWD: string;
 		TERM_PROGRAM_VERSION: string;
 		DESKTOP_SESSION: string;
 		NVM_BIN: string;
@@ -186,6 +185,7 @@ declare module '$env/dynamic/private' {
 		SYSTEMD_EXEC_PID: string;
 		IM_CONFIG_CHECK_ENV: string;
 		DBUS_SESSION_BUS_ADDRESS: string;
+		npm_config_engine_strict: string;
 		COLORTERM: string;
 		GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 		COLOR: string;

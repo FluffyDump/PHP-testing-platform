@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
 
-    // Define the interface for a Test
     interface Test {
         name: string;
         description: string;
@@ -9,19 +8,18 @@
 
     let testName = '';
     let testDescription = '';
-    let tests: Test[] = []; // Explicitly define tests as an array of Test objects
-    let error: string = ''; // To capture any errors
+    let tests: Test[] = [];
+    let error: string = '';
 
-    // Fetch created tests when the component mounts
     onMount(async () => {
         await fetchCreatedTests();
     });
 
-    // Function to fetch tests created by the teacher
+
     async function fetchCreatedTests() {
-        const response = await fetch('http://localhost:5000/tests'); // Adjust the endpoint as necessary
+        const response = await fetch('http://localhost:8000/tests');
         if (response.ok) {
-            tests = await response.json(); // Assuming the response is of type Test[]
+            tests = await response.json();
         } else {
             const errorData = await response.json();
             console.error('Failed to fetch tests:', errorData.message);
@@ -29,9 +27,8 @@
         }
     }
 
-    // Function to add a new test
     async function addTest() {
-        const response = await fetch('http://localhost:5000/tests', {
+        const response = await fetch('http://localhost:8000/tests', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -44,12 +41,10 @@
 
         if (response.ok) {
             console.log('Test added successfully!');
-            // Reset form fields
             testName = '';
             testDescription = '';
-            // Re-fetch tests to include the new one
             await fetchCreatedTests();
-            error = ''; // Clear any previous errors
+            error = '';
         } else {
             const errorData = await response.json();
             console.error('Failed to add test:', errorData.message);
@@ -95,9 +90,9 @@
     <div class="form">
         <input type="text" placeholder="Test Name" bind:value={testName} required />
         <input type="text" placeholder="Test Description" bind:value={testDescription} required />
-        <button on:click={addTest}>Add Test</button>
+        <button type="button" on:click={addTest}>Add Test</button>
         {#if error}
-            <div class="error">{error}</div> <!-- Show error message -->
+            <div class="error">{error}</div>
         {/if}
     </div>
 

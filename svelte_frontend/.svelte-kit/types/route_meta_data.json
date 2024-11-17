@@ -1,4 +1,6 @@
 {
 	"/": [],
-	"/Teacher": []
+	"/secured": [],
+	"/secured/Student": [],
+	"/secured/Teacher": []
 }

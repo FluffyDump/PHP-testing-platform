@@ -4,7 +4,7 @@
         {
             "label": "Run FastAPI with Hot-Reloading",
             "type": "shell",
-            "command": "PYTHONPATH=\"/home/sniegras/Documents/Komp. tinklai/PHP-testing-platform/flask_backend\" uvicorn flask_backend.app.main:app --port 5000 --reload",
+            "command": "PYTHONPATH=\"/home/sniegras/Documents/Komp. tinklai/PHP-testing-platform/flask_backend\" uvicorn flask_backend.app.main:app --port 8000 --reload",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

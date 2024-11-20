@@ -1,9 +1,13 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+	import { goto } from "$app/navigation";
+    import { onMount } from "svelte";
+    import { refreshAccessToken } from '../../../utils/auth';
 
     interface Test {
-        name: string;
+        title: string;
         description: string;
+        question_count: number;
+        created_at: Date;
     }
 
     let testName = '';
@@ -15,15 +19,33 @@
         await fetchCreatedTests();
     });
 
+    async function fetchCreatedTests(retry = true) {
+        const access_token = sessionStorage.getItem("access_token");
 
-    async function fetchCreatedTests() {
-        const response = await fetch('http://localhost:8000/tests');
+        const response = await fetch('http://localhost:8000/tests', {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "Authorization": `Bearer ${access_token}`,
+                "Content-Type": "application/json",
+            }
+        }
+        );
         if (response.ok) {
             tests = await response.json();
+            return tests;
+        } else if (response.status === 401){
+            if (retry) {
+                await refreshAccessToken();
+                await fetchCreatedTests(false);
+            }
+            else {
+                sessionStorage.removeItem("access_token");
+                goto("/")
+            }
         } else {
             const errorData = await response.json();
-            console.error('Failed to fetch tests:', errorData.message);
-            error = 'Failed to load tests.';
+            error = `${errorData.message}`;
         }
     }
 
@@ -83,6 +105,18 @@
         padding: 10px; /* Padding inside list items */
         border-radius: 5px; /* Rounded corners for list items */
     }
+
+    .button {
+        padding: 10px 20px;
+        margin: 10px; /* Space around buttons */
+        border: none;
+        border-radius: 5px;
+        background-color: #4A90E2;
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
+    }
 </style>
 
 <div>
@@ -90,7 +124,7 @@
     <div class="form">
         <input type="text" placeholder="Test Name" bind:value={testName} required />
         <input type="text" placeholder="Test Description" bind:value={testDescription} required />
-        <button type="button" on:click={addTest}>Add Test</button>
+        <button class="button" on:click={addTest}>Add Test</button>
         {#if error}
             <div class="error">{error}</div>
         {/if}
@@ -100,7 +134,10 @@
     <ul class="test-list">
         {#each tests as test}
             <li>
-                <strong>{test.name}</strong>: {test.description}
+                <strong>Title:</strong> {test.title}<br>
+                <strong>Description:</strong> {test.description}<br>
+                <strong>Question Count:</strong> {test.question_count}<br>
+                <strong>Created At:</strong> {new Date(test.created_at).toLocaleString()}<br>
             </li>
         {/each}
         {#if tests.length === 0}

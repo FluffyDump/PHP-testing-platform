@@ -12,11 +12,11 @@
         exp: number;
     }
 
-    let isLoading = true; // Track loading state for the blur effect
+    let isLoading = true;
 
     // Check if the JWT token is valid
     function getRoleFromToken() {
-        const token = localStorage.getItem("access_token");
+        const token = sessionStorage.getItem("access_token");
 
         if (!token) {
             goto("/");
@@ -27,7 +27,7 @@
             const decoded = jwtDecode<CustomJwtPayload>(token);
             return decoded.role;
         } catch (error) {
-            console.error("Invalid token:", error);
+            console.error("Neteisingas autentifikacijos žetonas:", error);
             goto("/");
             return null;
         }
@@ -41,29 +41,43 @@
         const basePath = `/secured/${role}`;
 
         if (currentPath.startsWith(basePath)) {
-            isLoading = false; // Token is valid, remove the blur effect
+            isLoading = false;
             return;
         }
 
         // Redirection based on role
         if (role === "teacher" && currentPath.startsWith("/secured/Student")) {
             goto("/secured/Teacher").then(() => {
-                isLoading = false; // Update loading state after redirection
+                isLoading = false;
             });
         } else if (role === "student" && currentPath.startsWith("/secured/Teacher")) {
             goto("/secured/Student").then(() => {
-                isLoading = false; // Update loading state after redirection
+                isLoading = false;
             });
         } else {
             goto(`/secured/${role}`).then(() => {
-                isLoading = false; // Update loading state after redirection
+                isLoading = false;
             });
         }
     });
 
-    function logout() {
-        localStorage.removeItem("access_token");
-        goto("/");
+    async function logout() {
+        try{
+            const response = await fetch("http://localhost:8000/logout", {
+                method: "POST",
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                sessionStorage.removeItem("access_token");
+                goto("/");
+            } else {
+                const responseData = await response.json();
+                console.error("Atsijungimas nepavyko :", responseData.detail);
+            }
+        } catch(error) {
+            console.error("Įvyko tinklo klaida atsijungiant: ", error);
+        }
     }
 </script>
 
@@ -134,7 +148,7 @@
     }
 </style>
 
-<div class="layout" style="filter: blur({isLoading ? '10px' : '0px'})">
+<div class="layout" style="filter: blur({isLoading ? "10px" : "0px"})">
     <header>
         <h1>PHP Testavimo Platforma</h1>
         <div>

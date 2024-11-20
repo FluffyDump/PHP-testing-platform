@@ -45,7 +45,7 @@ class Test(Base):
     removed = Column(Boolean, default=False, nullable=False)
 
     # Relationships
-    teacher_id = Column(Integer, ForeignKey("teacher.user_id"))
+    fk_teacheruser_id = Column(Integer, ForeignKey("teacher.user_id"))
     teacher = relationship("Teacher", back_populates="tests")
     questions = relationship("Question", back_populates="test", cascade="all, delete-orphan")
     test_results = relationship("TestResult", back_populates="test")

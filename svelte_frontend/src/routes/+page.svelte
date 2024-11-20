@@ -18,18 +18,17 @@
     let lastName = '';
     let email = '';
     let password = '';
-    let registrationError = ''; // Message for registration
+    let registrationError = '';
 
     // Login fields
     let loginIdentifier = '';
     let loginPassword = '';
-    let loginError = ''; // Error state for login
+    let loginError = ''; 
 
-    let isLoading = true; // Track loading state for the blur effect
+    let isLoading = true; 
 
-    // Function to get role from the JWT token
     function getRoleFromToken() {
-        const token = localStorage.getItem("access_token");
+        const token = sessionStorage.getItem("access_token");
 
         if (token) {
             try {
@@ -43,10 +42,9 @@
         return null;
     }
 
-    // On component mount, check for the JWT token and role
     onMount(() => {
         const role = getRoleFromToken();
-        isLoading = false; // Stop loading once the token check is done
+        isLoading = false;
 
         if (role) {
             goto(`/secured/${role}`);
@@ -65,13 +63,14 @@
         loginError = '';
     }
 
-    // Handle user registration
     async function registerUser() {
+    try {
         const response = await fetch('http://localhost:8000/register', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: "include",
             body: JSON.stringify({
                 username,
                 firstName,
@@ -81,16 +80,26 @@
             }),
         });
 
-        const responseJson = await response.json();
-        registrationError = responseJson.message;
+        const responseData = await response.json();
 
         if (response.ok) {
             registrationError = '';
-            goto('/secured/Student');
-        }
-    }
 
-    // Handle user login
+            if (responseData.role) {
+                sessionStorage.setItem("access_token", responseData.access_token);
+                goto(`/secured/${responseData.role}`);
+            } else {
+                loginError = responseData.message;
+            }
+        } else {
+            registrationError = responseData.detail || "Įvyko klaida!";
+        }
+    } catch (error) {
+        registrationError = "Įvyko tinklo klaida!";
+    }
+}
+
+
     async function loginUser() {
         const response = await fetch('http://localhost:8000/login', {
             method: 'POST',
@@ -109,21 +118,20 @@
             const responseData = await response.json();
 
             if (responseData.role) {
-                localStorage.setItem("access_token", responseData.access_token);
+                sessionStorage.setItem("access_token", responseData.access_token);
                 goto(`/secured/${responseData.role}`);
             } else {
-                loginError = responseData.message;
+                loginError = responseData.detail;
             }
         } else {
             const errorData = await response.json();
-            loginError = errorData.message || 'Invalid username/email or password!';
+            loginError = errorData.detail || 'Įvyko klaida!';
         }
     }
 
 </script>
 
 <style>
-    /* Add basic styling for the main container */
     .main {
         display: flex;
         flex-direction: column;
@@ -230,7 +238,7 @@
     {#if showLoginForm}
         <div class="form">
             <h2>Prisijungimas</h2>
-            <input type="text" bind:value={loginIdentifier} placeholder="Vartotojo vardas" />
+            <input type="text" bind:value={loginIdentifier} placeholder="Vartotojo vardas arba el. paštas" />
             <input type="password" bind:value={loginPassword} placeholder="Slaptažodis" />
             <button on:click={loginUser}>Prisijungti</button>
             {#if loginError}

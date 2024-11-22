@@ -9,11 +9,11 @@ def registration(db: Session, username: str, first_name: str, last_name: str, em
 
     existing_user_by_username = db.query(User).filter(User.username == username).first()
     if existing_user_by_username:
-        raise exceptions.UserAlreadyExistsError("Vartotojo vardas jau registruotas!")
+        raise exceptions.Conflict("Vartotojo vardas jau registruotas!")
     
     existing_user_by_email = db.query(User).filter(User.email == email).first()
     if existing_user_by_email:
-        raise exceptions.UserAlreadyExistsError("Elektroninis paštas jau registruotas!")
+        raise exceptions.Conflict("Elektroninis paštas jau registruotas!")
 
     new_user = User(username=username, name=first_name, surname=last_name, email=email, password_hash=hashed_password)
     db.add(new_user)
@@ -50,4 +50,4 @@ def login(db: Session, login_identifier: str, password: str):
 
         return access_token, refresh_token, role, "Prisijungimas sėkmingas!"
 
-    raise exceptions.IncorrectUserCredentials()
+    raise exceptions.Unauthorized(message="Neteisingi prisijungimo duomenys!")

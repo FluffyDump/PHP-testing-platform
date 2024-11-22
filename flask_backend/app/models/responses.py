@@ -10,3 +10,13 @@ class TestList(BaseModel):
     class Config:
         orm_mode = True
         extra = 'forbid'
+
+class AuthResponse(BaseModel):
+    message: str
+    access_token: str
+    token_type: str = "bearer"
+    role: str
+
+    class Config:
+        orm_mode = True
+        extra = 'forbid'

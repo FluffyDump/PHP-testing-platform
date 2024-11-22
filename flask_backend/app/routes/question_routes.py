@@ -4,7 +4,7 @@ from app.models import requests
 
 router = APIRouter()
 
-@router.post('/create_question')
+@router.post('/create_question', status_code=201, tags=["Questions Management"])
 async def create_question_route(data: requests.CreateQuestionRequest):
     success, result = create_question(data.question_text, data.correct_answer, data.test_id)
     

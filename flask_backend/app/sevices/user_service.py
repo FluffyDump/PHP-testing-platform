@@ -50,4 +50,4 @@ def login(db: Session, login_identifier: str, password: str):
 
         return access_token, refresh_token, role, "Prisijungimas sėkmingas!"
 
-    raise exceptions.Unauthorized(message="Neteisingi prisijungimo duomenys!")
+    raise exceptions.Unauthorized("Neteisingi prisijungimo duomenys!")

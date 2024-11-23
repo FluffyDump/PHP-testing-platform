@@ -2,11 +2,11 @@ from app.routes.question_routes import router as question_router
 from app.routes.test_routes import router as test_router
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.auth_routes import auth_router
-from app.sevices import jwt_service
+from app.config import config
 from fastapi import FastAPI
 import uvicorn
 
-jwt_service.validate_settings()
+config.validate_settings()
 
 app = FastAPI()
 

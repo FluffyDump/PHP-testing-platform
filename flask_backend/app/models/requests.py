@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from app.models import database
 from typing import Optional
 
 # Authentication request models

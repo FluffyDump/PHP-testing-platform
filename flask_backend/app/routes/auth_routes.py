@@ -4,6 +4,7 @@ from app.config.dependencies import oauth2_scheme
 from app.config.db_connection import get_db
 from sqlalchemy.exc import SQLAlchemyError
 from app.models import requests, responses
+from app.validators import auth_validator
 from app.sevices import jwt_service
 from sqlalchemy.orm import Session
 from app import exceptions
@@ -15,6 +16,10 @@ auth_router = APIRouter()
 @auth_router.post("/register", status_code=201, response_model=responses.AuthResponse, tags=["Authentication Management"])
 async def registration_route(data: requests.RegisterRequest, response: Response, db: Session = Depends(get_db)):
     try:
+        auth_validator.validate_name(first_name=data.firstName, last_name=data.lastName)
+        auth_validator.validate_username(username=data.username)
+        auth_validator.validate_email(email=data.email)
+        auth_validator.validate_password(password=data.password)
         access_token, refresh_token, role, message = registration(db=db, username=data.username, first_name=data.firstName, last_name=data.lastName, email=data.email, password=data.password)
         logging.info("User account created, created new refresh and access tokens")
 
@@ -27,8 +32,8 @@ async def registration_route(data: requests.RegisterRequest, response: Response,
             "role": role
         }
     except exceptions.Conflict as user_ex:
-        logging.warning(f"User already exists: {user_ex.message}")
-        raise HTTPException(status_code=user_ex.status_code, detail=user_ex.message)
+        logging.warning(f"User already exists: {user_ex.detail}")
+        raise HTTPException(status_code=user_ex.status_code, detail=user_ex.detail)
     except SQLAlchemyError as db_ex:
         logging.error(f"Database error: {db_ex}")
         raise HTTPException(status_code=500, detail="Vidinė serverio klaida")
@@ -42,6 +47,12 @@ async def registration_route(data: requests.RegisterRequest, response: Response,
 @auth_router.post("/login", status_code=201, response_model=responses.AuthResponse, tags=["Authentication Management"])
 async def login_route(data: requests.LoginRequest, response: Response, db: Session = Depends(get_db)):
     try:
+        if "@" in data.login_identifier:
+            auth_validator.validate_email(email=data.login_identifier)
+        else:
+            auth_validator.validate_username(username=data.login_identifier)
+        auth_validator.validate_password(password=data.password)
+        
         access_token, refresh_token, role, message = login(db=db, login_identifier=data.login_identifier, password=data.password)
         logging.info("User logged in, created new refresh and access tokens")
     
@@ -54,8 +65,8 @@ async def login_route(data: requests.LoginRequest, response: Response, db: Sessi
             "role": role
         }
     except exceptions.Unauthorized as user_cred:
-        logging.warning(f"Incorrect credentials: {user_cred.message}")
-        raise HTTPException(status_code=user_cred.status_code, detail=user_cred.message)
+        logging.warning(f"Incorrect credentials: {user_cred.detail}")
+        raise HTTPException(status_code=user_cred.status_code, detail=user_cred.detail)
     except SQLAlchemyError as db_ex:
         logging.error(f"Database error: {db_ex}")
         raise HTTPException(status_code=500, detail="Vidinė serverio klaida")

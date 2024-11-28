@@ -55,13 +55,12 @@ class Question(Base):
     __tablename__ = "question"
 
     question_id = Column(Integer, primary_key=True, index=True)
-    question_text = Column(String, nullable=False)
-    correct_answer = Column(String, nullable=False)
+    question_text = Column(String(255), nullable=False)
+    correct_answer = Column(String(255), nullable=False)
 
     # Relationships
-    test_id = Column(Integer, ForeignKey("test.test_id"), nullable=False)
+    fk_testtest_id = Column(Integer, ForeignKey("test.test_id"), nullable=False)
     test = relationship("Test", back_populates="questions")
-    answer = relationship("Answer", back_populates="question", uselist=False)
 
 
 class TestResult(Base):
@@ -74,10 +73,10 @@ class TestResult(Base):
     completed_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     # Relationships
-    user_id = Column(Integer, ForeignKey("User.user_id"), nullable=False)
+    fk_studentuser_id = Column(Integer, ForeignKey("User.user_id"), nullable=False)
     user = relationship("User", back_populates="test_results")
 
-    test_id = Column(Integer, ForeignKey("test.test_id"), nullable=False)
+    fk_testtest_id = Column(Integer, ForeignKey("test.test_id"), nullable=False)
     test = relationship("Test", back_populates="test_results")
 
     answers = relationship("Answer", back_populates="test_result", cascade="all, delete-orphan")
@@ -87,13 +86,12 @@ class Answer(Base):
     __tablename__ = "answer"
 
     answer_id = Column(Integer, primary_key=True, index=True)
-    question_text = Column(String, nullable=False)
+    question = Column(String, nullable=False)
     submitted_answer = Column(String, nullable=False)
     is_correct = Column(Boolean, default=False, nullable=False)
+    question = Column(String, nullable=False)
 
-    # Relationships
-    question_id = Column(Integer, ForeignKey("question.question_id"), nullable=False)
-    question = relationship("Question", back_populates="answer")
+    fk_questionquestion_id = Column(Integer, ForeignKey("question.question_id"), nullable=False)
 
-    test_result_id = Column(Integer, ForeignKey("test_result.test_result_id"), nullable=False)
+    fk_test_resulttest_result_id = Column(Integer, ForeignKey("test_result.test_result_id"), nullable=False)
     test_result = relationship("TestResult", back_populates="answers")

@@ -20,15 +20,27 @@ def registration(db: Session, username: str, first_name: str, last_name: str, em
     db.commit()
     db.refresh(new_user)
 
+    if not new_user:
+        db.rollback()
+        raise exceptions.InternalServerError("Nepavyko sukurti naujo vartotojo!")
+
     new_student = Student(user_id=new_user.user_id)
     db.add(new_student)
     db.commit()
+
+    if not new_student:
+        db.rollback()
+        raise exceptions.InternalServerError("Nepavyko sukurti naujo vartotojo!")
 
     role = "Student"
     access_token = jwt_service.create_access_token(data={"sub": new_user.username, "role": role})
     refresh_token = jwt_service.create_refresh_token(data={"sub": new_user.username, "role": role})
 
-    return access_token, refresh_token, role, "Registracija sėkminga!"
+    if not access_token or not refresh_token:
+        db.rollback()
+        raise exceptions.InternalServerError("Nepavyko sukurti naujo vartotojo!")
+
+    return access_token, refresh_token, "Registracija sėkminga!"
 
 
 def login(db: Session, login_identifier: str, password: str):
@@ -48,6 +60,17 @@ def login(db: Session, login_identifier: str, password: str):
             data={"sub": user.username, "role": role}
         )
 
-        return access_token, refresh_token, role, "Prisijungimas sėkmingas!"
-
+        return access_token, refresh_token, "Prisijungimas sėkmingas!"
     raise exceptions.Unauthorized("Neteisingi prisijungimo duomenys!")
+
+def get_user_id(db: Session, username: str):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise exceptions.NotFound("Vartotojas nerastas!")
+    return user.user_id
+
+def get_user(db: Session, username: str):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise exceptions.NotFound("Vartotojas nerastas!")
+    return user

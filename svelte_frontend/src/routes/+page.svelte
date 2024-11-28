@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { goto } from '$app/navigation';
     import { jwtDecode } from "jwt-decode";
+    import { isLoading } from '../utils/stores';
 
     interface CustomJwtPayload {
         sub: string;
@@ -25,15 +26,13 @@
     let loginPassword = '';
     let loginError = ''; 
 
-    let isLoading = true; 
-
     function getRoleFromToken() {
         const token = sessionStorage.getItem("access_token");
 
         if (token) {
             try {
                 const decoded = jwtDecode<CustomJwtPayload>(token);
-                return decoded.role;
+                return decoded;
             } catch (error) {
                 console.error("Invalid token:", error);
                 return null;
@@ -43,12 +42,16 @@
     }
 
     onMount(() => {
-        const role = getRoleFromToken();
-        isLoading = false;
+        isLoading.set(true);
+        const user = getRoleFromToken();
 
-        if (role) {
-            goto(`/secured/${role}`);
+        if (user) {
+            const role = user.role;
+            const username = user.sub;
+            isLoading.set(false);
+            goto(`/${role.charAt(0).toUpperCase() + role.slice(1)}/${username}`);
         }
+        isLoading.set(false);
     });
 
     function toggleRegister() {
@@ -65,6 +68,7 @@
 
     async function registerUser() {
     try {
+        isLoading.set(true);
         const response = await fetch('http://localhost:8000/register', { 
             method: 'POST',
             headers: {
@@ -85,49 +89,63 @@
         if (response.ok) {
             registrationError = '';
 
-            if (responseData.role) {
+            if (responseData.access_token) {
                 sessionStorage.setItem("access_token", responseData.access_token);
-                goto(`/secured/${responseData.role}`);
+                const user = getRoleFromToken();
+                if (user) {
+                    const role = user.role;
+                    const username = user.sub;
+                    isLoading.set(false);
+                    goto(`/${role.charAt(0).toLowerCase() + role.slice(1)}/${username}`);
+                }
             } else {
-                loginError = responseData.message;
+                isLoading.set(false);
+                registrationError = responseData.message;
             }
         } else {
+            isLoading.set(false);
             registrationError = responseData.detail || "Įvyko klaida!";
         }
     } catch (error) {
+        isLoading.set(false);
         registrationError = "Įvyko tinklo klaida!";
     }
 }
 
+async function loginUser() {
+    isLoading.set(true);
+    const response = await fetch('http://localhost:8000/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        credentials: "include",
+        body: JSON.stringify({
+            login_identifier: loginIdentifier,
+            password: loginPassword,
+        }),
+    });
 
-    async function loginUser() {
-        const response = await fetch('http://localhost:8000/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: "include",
-            body: JSON.stringify({
-                login_identifier: loginIdentifier,
-                password: loginPassword,
-            }),
-        });
+    const responseData = await response.json();
 
-        if (response.ok) {
-            loginError = '';
-            const responseData = await response.json();
-
-            if (responseData.role) {
-                sessionStorage.setItem("access_token", responseData.access_token);
-                goto(`/secured/${responseData.role}`);
-            } else {
-                loginError = responseData.detail;
+    if (response.ok) {
+        loginError = '';
+        if (responseData.access_token) {
+            sessionStorage.setItem("access_token", responseData.access_token);
+            const user = getRoleFromToken();
+            if (user) {
+                const role = user.role;
+                const username = user.sub;
+                isLoading.set(false);
+                goto(`/${role.charAt(0).toLowerCase() + role.slice(1)}/${username}`);
             }
-        } else {
-            const errorData = await response.json();
-            loginError = errorData.detail || 'Įvyko klaida!';
         }
+    } else {
+        isLoading.set(false);
+        loginError = responseData.detail || 'Įvyko klaida!';
     }
+}
+
 
 </script>
 
@@ -211,7 +229,7 @@
     }
 </style>
 
-<div class="main" style="filter: blur({isLoading ? '10px' : '0px'})">
+<div class="main">
     <h1>PHP testavimo platforma</h1>
     <p>Autorius: Tomas Petrauskas</p>
 

@@ -1,6 +1,12 @@
 {
 	"/": [],
-	"/secured": [],
-	"/secured/Student": [],
-	"/secured/Teacher": []
+	"/student/[username]": [],
+	"/student/[username]/results": [],
+	"/student/[username]/results/[test_id]": [],
+	"/student/[username]/tests": [],
+	"/student/[username]/tests/[test_id]": [],
+	"/teacher/[username]": [],
+	"/teacher/[username]/createTest": [],
+	"/teacher/[username]/tests": [],
+	"/teacher/[username]/tests/[test_id]": []
 }

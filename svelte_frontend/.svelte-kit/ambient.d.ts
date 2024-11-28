@@ -54,15 +54,13 @@ declare module '$env/static/private' {
 	export const npm_config_userconfig: string;
 	export const npm_config_local_prefix: string;
 	export const SYSTEMD_EXEC_PID: string;
-	export const IM_CONFIG_CHECK_ENV: string;
 	export const DBUS_SESSION_BUS_ADDRESS: string;
 	export const npm_config_engine_strict: string;
 	export const COLORTERM: string;
 	export const GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 	export const COLOR: string;
 	export const NVM_DIR: string;
-	export const IM_CONFIG_PHASE: string;
-	export const WAYLAND_DISPLAY: string;
+	export const GTK_IM_MODULE: string;
 	export const LOGNAME: string;
 	export const JOURNAL_STREAM: string;
 	export const _: string;
@@ -74,6 +72,7 @@ declare module '$env/static/private' {
 	export const TERM: string;
 	export const npm_config_cache: string;
 	export const GNOME_DESKTOP_SESSION_ID: string;
+	export const WINDOWPATH: string;
 	export const npm_config_node_gyp: string;
 	export const PATH: string;
 	export const SESSION_MANAGER: string;
@@ -82,7 +81,6 @@ declare module '$env/static/private' {
 	export const npm_package_name: string;
 	export const XDG_MENU_PREFIX: string;
 	export const LC_ADDRESS: string;
-	export const GNOME_SETUP_DISPLAY: string;
 	export const XDG_RUNTIME_DIR: string;
 	export const GDK_BACKEND: string;
 	export const DISPLAY: string;
@@ -108,6 +106,7 @@ declare module '$env/static/private' {
 	export const GDMSESSION: string;
 	export const LESSCLOSE: string;
 	export const LC_MEASUREMENT: string;
+	export const GPG_AGENT_INFO: string;
 	export const GJS_DEBUG_OUTPUT: string;
 	export const LC_IDENTIFICATION: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
@@ -185,15 +184,13 @@ declare module '$env/dynamic/private' {
 		npm_config_userconfig: string;
 		npm_config_local_prefix: string;
 		SYSTEMD_EXEC_PID: string;
-		IM_CONFIG_CHECK_ENV: string;
 		DBUS_SESSION_BUS_ADDRESS: string;
 		npm_config_engine_strict: string;
 		COLORTERM: string;
 		GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 		COLOR: string;
 		NVM_DIR: string;
-		IM_CONFIG_PHASE: string;
-		WAYLAND_DISPLAY: string;
+		GTK_IM_MODULE: string;
 		LOGNAME: string;
 		JOURNAL_STREAM: string;
 		_: string;
@@ -205,6 +202,7 @@ declare module '$env/dynamic/private' {
 		TERM: string;
 		npm_config_cache: string;
 		GNOME_DESKTOP_SESSION_ID: string;
+		WINDOWPATH: string;
 		npm_config_node_gyp: string;
 		PATH: string;
 		SESSION_MANAGER: string;
@@ -213,7 +211,6 @@ declare module '$env/dynamic/private' {
 		npm_package_name: string;
 		XDG_MENU_PREFIX: string;
 		LC_ADDRESS: string;
-		GNOME_SETUP_DISPLAY: string;
 		XDG_RUNTIME_DIR: string;
 		GDK_BACKEND: string;
 		DISPLAY: string;
@@ -239,6 +236,7 @@ declare module '$env/dynamic/private' {
 		GDMSESSION: string;
 		LESSCLOSE: string;
 		LC_MEASUREMENT: string;
+		GPG_AGENT_INFO: string;
 		GJS_DEBUG_OUTPUT: string;
 		LC_IDENTIFICATION: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;

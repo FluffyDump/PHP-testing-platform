@@ -20,7 +20,7 @@ async def registration_route(data: requests.RegisterRequest, response: Response,
         auth_validator.validate_username(username=data.username)
         auth_validator.validate_email(email=data.email)
         auth_validator.validate_password(password=data.password)
-        access_token, refresh_token, role, message = registration(db=db, username=data.username, first_name=data.firstName, last_name=data.lastName, email=data.email, password=data.password)
+        access_token, refresh_token, message = registration(db=db, username=data.username, first_name=data.firstName, last_name=data.lastName, email=data.email, password=data.password)
         logging.info("User account created, created new refresh and access tokens")
 
         jwt_service.set_cookie(response=response, refresh_token=refresh_token)
@@ -28,8 +28,7 @@ async def registration_route(data: requests.RegisterRequest, response: Response,
 
         return {
             "message": message,
-            "access_token": access_token,
-            "role": role
+            "access_token": access_token
         }
     except exceptions.Conflict as user_ex:
         logging.warning(f"User already exists: {user_ex.detail}")
@@ -53,7 +52,7 @@ async def login_route(data: requests.LoginRequest, response: Response, db: Sessi
             auth_validator.validate_username(username=data.login_identifier)
         auth_validator.validate_password(password=data.password)
         
-        access_token, refresh_token, role, message = login(db=db, login_identifier=data.login_identifier, password=data.password)
+        access_token, refresh_token, message = login(db=db, login_identifier=data.login_identifier, password=data.password)
         logging.info("User logged in, created new refresh and access tokens")
     
         jwt_service.set_cookie(response=response, refresh_token=refresh_token)
@@ -61,8 +60,7 @@ async def login_route(data: requests.LoginRequest, response: Response, db: Sessi
         
         return {
             "message": message,
-            "access_token": access_token,
-            "role": role
+            "access_token": access_token
         }
     except exceptions.Unauthorized as user_cred:
         logging.warning(f"Incorrect credentials: {user_cred.detail}")
